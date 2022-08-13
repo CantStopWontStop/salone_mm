@@ -67,8 +67,13 @@ all_countries <- under_5_raw %>%
 ```{r}
 
 
-all_countries %>% 
+all_countries_plot <- all_countries %>% 
     ggplot(aes(x =Year, y=Rate, group = Country.Name)) +
     geom_line(aes(color = is.Salone)) +
     gghighlight(is.Salone)
+```
+
+```{r}
+
+ggsave("output/all_countries_plot.png")
 ```
