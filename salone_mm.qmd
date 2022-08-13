@@ -1,0 +1,74 @@
+---
+title: "salone_mm"
+---
+
+## Quarto
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+li
+```
+
+```{r}
+theme_set(theme_bw())
+```
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+```{r}
+
+under_5_raw <- readxl::read_excel("data/Mortality-rate-under-five_2021.xlsx", sheet = "U5MR Country estimates", skip = 14)
+```
+
+```{r}
+str(under_5_raw)
+```
+
+```{r}
+summary(under_5_raw) 
+```
+
+```{r}
+test <- under_5_raw %>% 
+    filter(Country.Name %in% c("Sierra Leone", "Ghana", "Nigeria", "Ethiopia", "Rwanda") & `Uncertainty.Bounds*` == "Median") %>% 
+    select(-`Uncertainty.Bounds*`) %>% 
+    pivot_longer(cols = c(-"ISO.Code", -"Country.Name"),
+                 names_to = "Year",
+                 values_to = "Rate") %>% 
+    mutate(Year = Year %>% 
+               as.numeric() %>% plyr::round_any(1, f = floor)) %>% 
+    filter(!is.na(Rate))
+```
+
+```{r}
+test %>% 
+    ggplot(aes(x =Year, y=Rate, group = Country.Name)) +
+    geom_line(aes(color = Country.Name)) +
+    scale_color_brewer(palette = "Spectral")
+```
+
+```{r}
+
+all_countries <- under_5_raw %>% 
+    filter(`Uncertainty.Bounds*` == "Median") %>% 
+    select(-`Uncertainty.Bounds*`) %>% 
+    pivot_longer(cols = c(-"ISO.Code", -"Country.Name"),
+                 names_to = "Year",
+                 values_to = "Rate") %>% 
+    mutate(Year = Year %>% 
+               as.numeric() %>% plyr::round_any(1, f = floor), 
+           is.Salone = if_else(Country.Name == "Sierra Leone", 
+                          TRUE, 
+                          FALSE)
+               ) %>% 
+    filter(!is.na(Rate))
+```
+
+```{r}
+
+
+all_countries %>% 
+    ggplot(aes(x =Year, y=Rate, group = Country.Name)) +
+    geom_line(aes(color = is.Salone)) +
+    gghighlight(is.Salone)
+```
